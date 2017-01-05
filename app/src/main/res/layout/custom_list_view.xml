@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/custom_list_view"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:minHeight="50dp"
+    android:theme="@style/TextView"
+    android:padding="8dp">
+
+    <TextView
+        android:id="@+id/mag"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:background="@drawable/circle_layout"
+        tools:text="5.3"
+        android:textColor="#ffffff"
+        android:gravity="center"
+        android:textSize="16sp"/>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="2"
+        android:orientation="vertical"
+        android:paddingLeft="16dp">
+
+        <TextView
+            android:id="@+id/location_offset"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="75KM NW of blah blah blah "
+            android:textColor="#757575"
+            android:gravity="left"/>
+
+
+        <TextView
+            android:id="@+id/primary_location"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="New Delhi blah blah blah "
+            android:gravity="left"/>
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="2"
+        android:orientation="vertical"
+        android:gravity="right">
+
+        <TextView
+            android:id="@+id/time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="12:00 AM"
+            android:textColor="#757575"/>
+
+
+        <TextView
+            android:id="@+id/date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="24th July 1999"/>
+
+    </LinearLayout>
+</LinearLayout>
+
