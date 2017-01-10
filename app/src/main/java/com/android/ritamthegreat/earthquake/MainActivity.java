@@ -1,6 +1,8 @@
 package com.android.ritamthegreat.earthquake;
 
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -15,6 +17,7 @@ import android.view.MenuItem;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -32,14 +35,13 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String USGS_REQUEST_URL ="http://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=2012-01-01&endtime=2012-12-01&minmagnitude=6";
+    private static final String USGS_REQUEST_URL =" http://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&eventtype=earthquake&orderby=time&minmag=6&limit=10";
     private final String LOG_TAG=MainActivity.class.getSimpleName();
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
         EarthquakeAsyncTask task=new EarthquakeAsyncTask();
         task.execute();
 
@@ -73,6 +75,14 @@ public class MainActivity extends AppCompatActivity {
      */
     private class EarthquakeAsyncTask extends AsyncTask<URL, Void, WordAdapter> {
 
+        ProgressBar spinner=(ProgressBar)findViewById(R.id.spinner);
+
+        @Override
+        protected void onPreExecute() {
+            spinner.getIndeterminateDrawable().setColorFilter(Color.RED, PorterDuff.Mode.MULTIPLY);
+            spinner.setVisibility(View.VISIBLE);
+        }
+
         @Override
         protected WordAdapter doInBackground(URL... urls) {
             // Create URL object
@@ -86,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
                 // TODO Handle the IOException
             }
 
-            ArrayList<CustomString> earthquakes=QueryUtils.extractEarthquakes();
+            ArrayList<CustomString> earthquakes=QueryUtils.extractEarthquakes(jsonResponse);
 
             final WordAdapter adapter=new WordAdapter(MainActivity.this,earthquakes);
 
@@ -100,6 +110,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(WordAdapter adapter) {
 
+            spinner.setVisibility(View.GONE);
             if (adapter == null) {
                 return;
             }
@@ -185,6 +196,4 @@ public class MainActivity extends AppCompatActivity {
             return output.toString();
         }
     }
-
-
 }
