@@ -47,7 +47,7 @@
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="2"
+        android:layout_weight="1"
         android:orientation="vertical"
         android:gravity="right">
 
@@ -56,13 +56,15 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             tools:text="12:00 AM"
-            android:textColor="#757575"/>
+            android:textColor="#757575"
+            android:textSize="12sp"/>
 
 
         <TextView
             android:id="@+id/date"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textSize="12sp"
             tools:text="24th July 1999"/>
 
     </LinearLayout>
