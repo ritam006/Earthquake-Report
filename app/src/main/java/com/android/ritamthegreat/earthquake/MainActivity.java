@@ -11,6 +11,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -37,7 +39,7 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements android.app.LoaderManager.LoaderCallbacks<ArrayList<CustomString>> {
 
     private static final String USGS_REQUEST_URL = "http://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&eventtype=earthquake&orderby=time&minmag=6&limit=10";
     private final String LOG_TAG = MainActivity.class.getSimpleName();
@@ -53,7 +55,6 @@ public class MainActivity extends AppCompatActivity {
         spinner = (ProgressBar) findViewById(R.id.spinner);
         textView = (TextView) findViewById(R.id.textView);
         textView.setVisibility(View.INVISIBLE);
-        EarthquakeAsyncTask task = new EarthquakeAsyncTask();
         ConnectivityManager cm =
                 (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
 
@@ -62,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
                 activeNetwork.isConnectedOrConnecting();
         if(isConnected)
         {
-            task.execute();
+            getLoaderManager().initLoader(0,null,MainActivity.this);
         }
         else
         {
@@ -94,131 +95,41 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    /**
-     * {@link AsyncTask} to perform the network request on a background thread, and then
-     * update the UI with the first earthquake in the response.
-     */
-    private class EarthquakeAsyncTask extends AsyncTask<URL, Void, WordAdapter> {
+    @Override
+    public android.content.Loader<ArrayList<CustomString>> onCreateLoader(int i, Bundle bundle) {
 
+        EarthQuakeAsyncTaskLoader earthQuakeAsyncTaskLoader=new EarthQuakeAsyncTaskLoader(this,USGS_REQUEST_URL);
+        return earthQuakeAsyncTaskLoader;
+    }
 
-        @Override
-        protected void onPreExecute() {
-            spinner.getIndeterminateDrawable().setColorFilter(Color.RED, PorterDuff.Mode.MULTIPLY);
-            spinner.setVisibility(View.VISIBLE);
+    @Override
+    public void onLoadFinished(android.content.Loader<ArrayList<CustomString>> loader, ArrayList<CustomString> customStrings) {
+        spinner.setVisibility(View.GONE);
+        if (loader == null) {
+            return;
         }
+        ListView listView = (ListView) findViewById(R.id.list);
+        final WordAdapter newAdapter = new WordAdapter(this,customStrings);
+        listView.setAdapter(newAdapter);
 
-        @Override
-        protected WordAdapter doInBackground(URL... urls) {
-            // Create URL object
-            URL url = createUrl(USGS_REQUEST_URL);
-
-            // Perform HTTP request to the URL and receive a JSON response back
-            String jsonResponse = "";
-            try {
-                jsonResponse = makeHttpRequest(url);
-            } catch (IOException e) {
-                // TODO Handle the IOException
-            }
-
-            ArrayList<CustomString> earthquakes = QueryUtils.extractEarthquakes(jsonResponse);
-
-            final WordAdapter adapter = new WordAdapter(MainActivity.this, earthquakes);
-
-            return adapter;
-        }
-
-        /**
-         * Update the screen with the given earthquake (which was the result of the
-         * {@link EarthquakeAsyncTask}).
-         */
-        @Override
-        protected void onPostExecute(WordAdapter adapter) {
-
-            spinner.setVisibility(View.GONE);
-            if (adapter == null) {
-                return;
-            }
-            ListView listView = (ListView) findViewById(R.id.list);
-
-            listView.setAdapter(adapter);
-
-            final WordAdapter newAdapter = adapter;
-
-            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                    CustomString string = newAdapter.getItem(i);
-                    String url = string.getURL();
-                    Intent intent = new Intent(Intent.ACTION_VIEW);
-                    intent.setData(Uri.parse(url));
-                    if (intent.resolveActivity(getPackageManager()) != null) {
-                        startActivity(intent);
-                    }
-                }
-            });
-
-            listView.setEmptyView(textView);
-        }
-
-        /**
-         * Returns new URL object from the given string URL.
-         */
-        private URL createUrl(String stringUrl) {
-            URL url = null;
-            try {
-                url = new URL(stringUrl);
-            } catch (MalformedURLException exception) {
-                Log.e(LOG_TAG, "Error with creating URL", exception);
-                return null;
-            }
-            return url;
-        }
-
-        /**
-         * Make an HTTP request to the given URL and return a String as the response.
-         */
-        private String makeHttpRequest(URL url) throws IOException {
-            String jsonResponse = "";
-            HttpURLConnection urlConnection = null;
-            InputStream inputStream = null;
-            try {
-                urlConnection = (HttpURLConnection) url.openConnection();
-                urlConnection.setRequestMethod("GET");
-                urlConnection.setReadTimeout(10000 /* milliseconds */);
-                urlConnection.setConnectTimeout(15000 /* milliseconds */);
-                urlConnection.connect();
-                inputStream = urlConnection.getInputStream();
-                jsonResponse = readFromStream(inputStream);
-            } catch (IOException e) {
-                // TODO: Handle the exception
-            } finally {
-                if (urlConnection != null) {
-                    urlConnection.disconnect();
-                }
-                if (inputStream != null) {
-                    // function must handle java.io.IOException here
-                    inputStream.close();
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                CustomString string = newAdapter.getItem(i);
+                String url = string.getURL();
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(Uri.parse(url));
+                if (intent.resolveActivity(getPackageManager()) != null) {
+                    startActivity(intent);
                 }
             }
-            return jsonResponse;
-        }
+        });
 
-        /**
-         * Convert the {@link InputStream} into a String which contains the
-         * whole JSON response from the server.
-         */
-        private String readFromStream(InputStream inputStream) throws IOException {
-            StringBuilder output = new StringBuilder();
-            if (inputStream != null) {
-                InputStreamReader inputStreamReader = new InputStreamReader(inputStream, Charset.forName("UTF-8"));
-                BufferedReader reader = new BufferedReader(inputStreamReader);
-                String line = reader.readLine();
-                while (line != null) {
-                    output.append(line);
-                    line = reader.readLine();
-                }
-            }
-            return output.toString();
-        }
+        listView.setEmptyView(textView);
+    }
+
+    @Override
+    public void onLoaderReset(android.content.Loader<ArrayList<CustomString>> loader) {
+
     }
 }
