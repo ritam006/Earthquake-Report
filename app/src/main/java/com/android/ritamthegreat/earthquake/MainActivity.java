@@ -2,6 +2,7 @@ package com.android.ritamthegreat.earthquake;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.net.ConnectivityManager;
@@ -9,6 +10,7 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.LoaderManager;
@@ -24,6 +26,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -41,12 +44,10 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements android.app.LoaderManager.LoaderCallbacks<ArrayList<CustomString>> {
 
-    private static final String USGS_REQUEST_URL = "http://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&eventtype=earthquake&orderby=time&minmag=6&limit=10";
+    private static final String USGS_REQUEST_URL = "http://earthquake.usgs.gov/fdsnws/event/1/query";
     private final String LOG_TAG = MainActivity.class.getSimpleName();
-
     TextView textView;
     ProgressBar spinner;
-
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -57,7 +58,6 @@ public class MainActivity extends AppCompatActivity implements android.app.Loade
         textView.setVisibility(View.INVISIBLE);
         ConnectivityManager cm =
                 (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
-
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
         boolean isConnected = activeNetwork != null &&
                 activeNetwork.isConnectedOrConnecting();
@@ -71,6 +71,7 @@ public class MainActivity extends AppCompatActivity implements android.app.Loade
             textView.setVisibility(View.VISIBLE);
             textView.setText("No internet Connection");
         }
+
     }
 
     @Override
@@ -89,6 +90,8 @@ public class MainActivity extends AppCompatActivity implements android.app.Loade
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            Intent intent=new Intent(this,Settings_Activity.class);
+            startActivity(intent);
             return true;
         }
 
@@ -97,8 +100,19 @@ public class MainActivity extends AppCompatActivity implements android.app.Loade
 
     @Override
     public android.content.Loader<ArrayList<CustomString>> onCreateLoader(int i, Bundle bundle) {
+        SharedPreferences prefs= PreferenceManager.getDefaultSharedPreferences(this);
+        String minMagnitude = prefs.getString(
+                getString(R.string.settings_min_magnitude_key),
+                getString(R.string.settings_min_magnitude_default));
+        String orderBy=prefs.getString(getString(R.string.settings_order_by_key),getString(R.string.settings_order_by_default));
+        Uri baseUri = Uri.parse(USGS_REQUEST_URL);
+        Uri.Builder uriBuilder = baseUri.buildUpon();
 
-        EarthQuakeAsyncTaskLoader earthQuakeAsyncTaskLoader=new EarthQuakeAsyncTaskLoader(this,USGS_REQUEST_URL);
+        uriBuilder.appendQueryParameter("format", "geojson");
+        uriBuilder.appendQueryParameter("limit", "10");
+        uriBuilder.appendQueryParameter("minmag", minMagnitude);
+        uriBuilder.appendQueryParameter("orderby", orderBy);
+        EarthQuakeAsyncTaskLoader earthQuakeAsyncTaskLoader=new EarthQuakeAsyncTaskLoader(this,uriBuilder.toString());
         return earthQuakeAsyncTaskLoader;
     }
 
@@ -124,7 +138,6 @@ public class MainActivity extends AppCompatActivity implements android.app.Loade
                 }
             }
         });
-
         listView.setEmptyView(textView);
     }
 

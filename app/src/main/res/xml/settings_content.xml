@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:title="@string/settings_title">
+    <EditTextPreference
+        android:textColor="#000000"
+        android:defaultValue="@string/settings_min_magnitude_default"
+        android:inputType="numberDecimal"
+        android:key="@string/settings_min_magnitude_key"
+        android:selectAllOnFocus="true"
+        android:title="@string/settings_min_magnitude_label" />
+    <ListPreference
+        android:key="@string/settings_order_by_key"
+        android:defaultValue="@string/settings_order_by_default"
+        android:entries="@array/order_preference"
+        android:entryValues="@array/preference"
+        android:title="Order By Preferrence"/>
+</PreferenceScreen>

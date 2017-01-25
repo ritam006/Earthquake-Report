@@ -2,6 +2,7 @@ package com.android.ritamthegreat.earthquake;
 
 import android.content.AsyncTaskLoader;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.util.Log;
 
 import java.io.BufferedReader;
@@ -34,6 +35,8 @@ public class EarthQuakeAsyncTaskLoader extends AsyncTaskLoader<ArrayList<CustomS
 
     @Override
     public ArrayList<CustomString> loadInBackground() {
+
+
 
         // Create URL object
         URL url = createUrl(USGS_REQUEST_URL);
