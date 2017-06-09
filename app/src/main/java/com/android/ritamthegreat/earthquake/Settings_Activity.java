@@ -8,6 +8,7 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.widget.Toast;
 
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
@@ -30,8 +31,8 @@ public class Settings_Activity extends AppCompatActivity {
             addPreferencesFromResource(R.xml.settings_content);
             Preference minMagnitude=findPreference(getString(R.string.settings_min_magnitude_key));
             bindPreferenceSummaryToValue(minMagnitude);
-            Preference orderBy=findPreference(getString(R.string.settings_order_by_magnitude_key));
-            //bindPreferenceSummaryToValue(orderBy);
+            Preference orderBy=findPreference(getString(R.string.settings_order_by_key));
+            bindPreferenceSummaryToValue(orderBy);
         }
         @Override
         public boolean onPreferenceChange(Preference preference, Object o) {
